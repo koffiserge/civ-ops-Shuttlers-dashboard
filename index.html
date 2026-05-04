@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shuttlers CIV — Ops Command Center 2026</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --or:#E8680A;--nv:#0B2D5A;--tl:#0E7C86;--gn:#1A7F56;
+  --bg:#ffffff;--bg2:#f5f6f8;--bg3:#eef0f3;
+  --tx:#111827;--tx2:#6b7280;--bd:#e5e7eb;
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif
+}
+body{font-family:var(--font);background:var(--bg3);color:var(--tx);min-height:100vh}
+.hdr{background:var(--nv);color:#fff;padding:16px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.phase-badge{background:var(--or);color:#fff;font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;white-space:nowrap;letter-spacing:.03em}
+.hdr-title{font-size:17px;font-weight:600;flex:1}
+.hdr-sub{font-size:12px;color:rgba(255,255,255,.65);margin-top:2px}
+.hdr-stat{text-align:right;font-size:11px;color:rgba(255,255,255,.65)}
+.hdr-stat span{display:block;font-size:19px;font-weight:600;color:#fff;margin-top:2px}
+.tabs{display:flex;background:var(--bg);border-bottom:1px solid var(--bd);padding:0 20px}
+.tab{padding:11px 18px;font-size:13px;cursor:pointer;border:none;background:none;border-bottom:2.5px solid transparent;color:var(--tx2);transition:.15s}
+.tab.active{color:var(--or);border-bottom-color:var(--or);font-weight:600}
+.tab:hover:not(.active){color:var(--tx)}
+.content{padding:20px 24px;display:none}
+.content.active{display:block}
+.section-label{font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--tx2);text-transform:uppercase;margin-bottom:12px}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;cursor:pointer;transition:border-color .15s}
+.kpi:hover{border-color:#aaa}
+.kpi-lbl{font-size:11px;color:var(--tx2);margin-bottom:6px}
+.kpi-row{display:flex;align-items:baseline;gap:4px}
+.kpi-val{font-size:26px;font-weight:600;line-height:1;color:var(--tx);border:none;background:transparent;width:80px;outline:none;font-family:var(--font)}
+.kpi-unit{font-size:13px;color:var(--tx2)}
+.kpi-target{font-size:10px;color:var(--tx2);margin:5px 0 6px}
+.bar-track{height:4px;background:var(--bg2);border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;border-radius:2px;transition:width .5s ease}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.card{background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:16px}
+.card-title{font-size:12px;font-weight:600;color:var(--tx2);margin-bottom:14px;text-transform:uppercase;letter-spacing:.05em;font-size:10px}
+.bar-chart-wrap{display:flex;align-items:flex-end;gap:8px;height:90px}
+.bc-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+.bc-bar{border-radius:4px 4px 0 0;min-height:3px;transition:.5s}
+.bc-lbl{font-size:10px;color:var(--tx2);text-align:center}
+.bc-val{font-size:10px;font-weight:600;color:var(--tx)}
+.funnel-wrap{display:flex;flex-direction:column;gap:6px}
+.f-row{display:flex;align-items:center;gap:8px}
+.f-bg{flex:1;height:26px;background:var(--bg2);border-radius:5px;overflow:hidden}
+.f-fill{height:100%;border-radius:5px;display:flex;align-items:center;padding:0 10px;font-size:11px;font-weight:600;color:#fff;white-space:nowrap}
+.f-num{font-size:11px;font-weight:700;min-width:28px;text-align:right}
+.phase-block{background:var(--bg);border:1px solid var(--bd);border-radius:12px;overflow:hidden;margin-bottom:14px}
+.phase-hdr{padding:13px 16px;color:#fff;font-weight:600;font-size:13px;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.phase-period{font-size:11px;opacity:.8;font-weight:400}
+.milestone{display:flex;align-items:flex-start;gap:10px;padding:10px 16px;border-bottom:1px solid var(--bd);font-size:13px;cursor:pointer;transition:background .1s;user-select:none}
+.milestone:last-child{border-bottom:none}
+.milestone:hover{background:var(--bg2)}
+.milestone.done .m-txt{text-decoration:line-through;color:var(--tx2)}
+.m-chk{width:18px;height:18px;border-radius:50%;border:2px solid var(--bd);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:10px;transition:.2s}
+.m-chk.done{background:var(--gn);border-color:var(--gn);color:#fff}
+.m-txt{flex:1;line-height:1.4}
+.m-dl{font-size:10px;color:var(--tx2);white-space:nowrap;margin-left:8px;margin-top:2px}
+.plan-section{margin-bottom:18px}
+.plan-hdr{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--bd);margin-bottom:10px;cursor:pointer}
+.badge{border-radius:5px;padding:3px 10px;color:#fff;font-size:11px;font-weight:700}
+.plan-title-text{font-size:14px;font-weight:600;flex:1}
+.plan-period{font-size:11px;color:var(--tx2)}
+.week-block{margin-bottom:10px}
+.week-hdr{display:flex;align-items:center;gap:8px;background:var(--bg2);border-radius:8px;padding:8px 12px;cursor:pointer;margin-bottom:3px}
+.week-title{font-size:12px;font-weight:600;flex:1;color:var(--tx)}
+.week-dates{font-size:11px;color:var(--tx2)}
+.tasks{padding:2px 4px}
+.task{display:flex;align-items:flex-start;gap:8px;padding:7px 8px;border-radius:7px;cursor:pointer;font-size:12px;line-height:1.4;transition:background .1s;user-select:none}
+.task:hover{background:var(--bg2)}
+.task.done .task-txt{text-decoration:line-through;color:var(--tx2)}
+.t-chk{width:15px;height:15px;border-radius:4px;border:1.5px solid var(--bd);flex-shrink:0;margin-top:1px;transition:.15s}
+.t-chk.done{background:var(--gn);border-color:var(--gn)}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.task-txt{flex:1}
+.cadence-wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.c-card{background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:16px}
+.c-title-row{display:flex;align-items:center;margin-bottom:12px}
+.c-title{font-size:13px;font-weight:600;flex:1}
+.reset-btn{font-size:11px;color:var(--tx2);background:none;border:1px solid var(--bd);border-radius:5px;padding:3px 8px;cursor:pointer}
+.c-item{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd);font-size:12px;cursor:pointer;user-select:none}
+.c-item:last-child{border-bottom:none}
+.c-chk{width:15px;height:15px;border-radius:4px;border:1.5px solid var(--bd);flex-shrink:0;margin-top:1px;transition:.15s}
+.c-chk.done{background:var(--or);border-color:var(--or)}
+.sla-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.sla-card{background:var(--bg2);border-radius:10px;padding:12px 14px}
+.sla-title{font-size:11px;font-weight:700;margin-bottom:4px}
+.sla-val{font-size:18px;font-weight:700;margin-bottom:2px}
+.sla-note{font-size:10px;color:var(--tx2)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx2)}
+.legend-dot{width:8px;height:8px;border-radius:50%}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <span class="phase-badge">Q2 — Fondation</span>
+  <div>
+    <div class="hdr-title">🚌 Shuttlers CIV — Ops Command Center 2026</div>
+    <div class="hdr-sub">Head of Operations · Abidjan · Objectif : Breakeven Q4 2026</div>
+  </div>
+  <div class="hdr-stat" style="margin-left:auto">
+    Flotte cible fin 2026
+    <span>50 véh. / 1 381 sièges/j</span>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('dashboard',this)">🎯 Dashboard KPIs</button>
+  <button class="tab" onclick="switchTab('roadmap',this)">🗺️ Roadmap Q2–Q4</button>
+  <button class="tab" onclick="switchTab('plan',this)">📅 Plan d'Exécution</button>
+  <button class="tab" onclick="switchTab('cadence',this)">⚙️ Cadence Ops</button>
+</div>
+
+<!-- ══════ DASHBOARD ══════ -->
+<div id="tab-dashboard" class="content active">
+  <p class="section-label">Suivi KPIs — Cliquer pour mettre à jour votre réel</p>
+  <div class="kpi-grid">
+    <div class="kpi" onclick="document.getElementById('v-veh').focus()">
+      <div class="kpi-lbl">Véhicules sur plateforme</div>
+      <div class="kpi-row"><input class="kpi-val" id="v-veh" type="number" min="0" max="50" value="0" oninput="upd('b-veh',this.value,50,'#E8680A')"><span class="kpi-unit">/ 50 véh.</span></div>
+      <div class="kpi-target">Cible Q4 : 50 véhicules</div>
+      <div class="bar-track"><div class="bar-fill" id="b-veh" style="width:0%;background:#E8680A"></div></div>
+    </div>
+    <div class="kpi" onclick="document.getElementById('v-seats').focus()">
+      <div class="kpi-lbl">Sièges disponibles / jour</div>
+      <div class="kpi-row"><input class="kpi-val" id="v-seats" type="number" min="0" max="1381" value="0" oninput="upd('b-seats',this.value,1381,'#0B2D5A')"><span class="kpi-unit">/ 1 381</span></div>
+      <div class="kpi-target">Cible Déc : 1 381 sièges/j</div>
+      <div class="bar-track"><div class="bar-fill" id="b-seats" style="width:0%;background:#0B2D5A"></div></div>
+    </div>
+    <div class="kpi" onclick="document.getElementById('v-otp').focus()">
+      <div class="kpi-lbl">OTP — On-Time Performance</div>
+      <div class="kpi-row"><input class="kpi-val" id="v-otp" type="number" min="0" max="100" value="0" oninput="updPct('b-otp',this.value,85,'#0E7C86')"><span class="kpi-unit">%</span></div>
+      <div class="kpi-target">Cible Q3–Q4 : ≥ 85%</div>
+      <div class="bar-track"><div class="bar-fill" id="b-otp" style="width:0%;background:#0E7C86"></div></div>
+    </div>
+    <div class="kpi" onclick="document.getElementById('v-occ').focus()">
+      <div class="kpi-lbl">Taux d'occupation</div>
+      <div class="kpi-row"><input class="kpi-val" id="v-occ" type="number" min="0" max="100" value="0" oninput="updPct('b-occ',this.value,75,'#1A7F56')"><span class="kpi-unit">%</span></div>
+      <div class="kpi-target">Cible Q4 : ≥ 75%</div>
+      <div class="bar-track"><div class="bar-fill" id="b-occ" style="width:0%;background:#1A7F56"></div></div>
+    </div>
+    <div class="kpi" onclick="document.getElementById('v-cancel').focus()">
+      <div class="kpi-lbl">Taux d'annulations</div>
+      <div class="kpi-row"><input class="kpi-val" id="v-cancel" type="number" min="0" max="100" value="0" oninput="updCancel('b-cancel',this.value)"><span class="kpi-unit">%</span></div>
+      <div class="kpi-target">Cible Q3–Q4 : &lt; 5%</div>
+      <div class="bar-track"><div class="bar-fill" id="b-cancel" style="width:0%;background:#1A7F56"></div></div>
+    </div>
+    <div class="kpi" onclick="document.getElementById('v-partners').focus()">
+      <div class="kpi-lbl">Partenaires actifs</div>
+      <div class="kpi-row"><input class="kpi-val" id="v-partners" type="number" min="0" max="35" value="0" oninput="upd('b-partners',this.value,35,'#E8680A')"><span class="kpi-unit">/ 35+</span></div>
+      <div class="kpi-target">Cible Q4 : 35+ partenaires</div>
+      <div class="bar-track"><div class="bar-fill" id="b-partners" style="width:0%;background:#E8680A"></div></div>
+    </div>
+    <div class="kpi" onclick="document.getElementById('v-b2c').focus()">
+      <div class="kpi-lbl">MAU B2C (passagers actifs)</div>
+      <div class="kpi-row"><input class="kpi-val" id="v-b2c" type="number" min="0" max="400" value="0" oninput="upd('b-b2c',this.value,400,'#0E7C86')"><span class="kpi-unit">/ 400</span></div>
+      <div class="kpi-target">Cible Déc : 400 MAU</div>
+      <div class="bar-track"><div class="bar-fill" id="b-b2c" style="width:0%;background:#0E7C86"></div></div>
+    </div>
+    <div class="kpi" onclick="document.getElementById('v-excl').focus()">
+      <div class="kpi-lbl">Contrats Exclusive B2B</div>
+      <div class="kpi-row"><input class="kpi-val" id="v-excl" type="number" min="0" max="10" value="0" oninput="upd('b-excl',this.value,10,'#0B2D5A')"><span class="kpi-unit">/ 10</span></div>
+      <div class="kpi-target">Cible Q4 : 10 entreprises</div>
+      <div class="bar-track"><div class="bar-fill" id="b-excl" style="width:0%;background:#0B2D5A"></div></div>
+    </div>
+  </div>
+
+  <div class="charts-row">
+    <div class="card">
+      <div class="card-title">Progression Flotte (véhicules)</div>
+      <div class="bar-chart-wrap">
+        <div class="bc-col"><div class="bc-val">2</div><div class="bc-bar" style="width:100%;height:4px;background:#D1D5DB"></div><div class="bc-bar" style="width:100%;height:4px;background:#E8680A;margin-top:2px"></div><div class="bc-lbl">Q2<br>Cible/Réel</div></div>
+        <div class="bc-col"><div class="bc-val">13</div><div class="bc-bar" style="width:100%;height:24px;background:#D1D5DB"></div><div class="bc-bar" style="width:100%;height:2px;background:#E8680A;margin-top:2px"></div><div class="bc-lbl">Q3<br>Cible/Réel</div></div>
+        <div class="bc-col"><div class="bc-val">50</div><div class="bc-bar" style="width:100%;height:90px;background:#D1D5DB"></div><div class="bc-bar" id="fleet-real-bar" style="width:100%;height:2px;background:#E8680A;margin-top:2px"></div><div class="bc-lbl">Q4<br>Cible/Réel</div></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:10px">
+        <span style="font-size:10px;color:#6b7280;display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:#D1D5DB;display:inline-block"></span>Cible</span>
+        <span style="font-size:10px;color:#6b7280;display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:#E8680A;display:inline-block"></span>Réel (mis à jour)</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Funnel Partenaires Véhicules</div>
+      <div class="funnel-wrap">
+        <div class="f-row"><div class="f-bg"><div class="f-fill" style="width:100%;background:#0B2D5A">Prospects identifiés</div></div><div class="f-num" style="color:#0B2D5A">100</div></div>
+        <div class="f-row"><div class="f-bg"><div class="f-fill" style="width:60%;background:#0E7C86">Contactés (60%)</div></div><div class="f-num" style="color:#0E7C86">60</div></div>
+        <div class="f-row"><div class="f-bg"><div class="f-fill" style="width:35%;background:#E8680A">Démo effectuée</div></div><div class="f-num" style="color:#E8680A">35</div></div>
+        <div class="f-row"><div class="f-bg"><div class="f-fill" style="width:20%;background:#1A7F56">Contrat signé</div></div><div class="f-num" style="color:#1A7F56">20</div></div>
+      </div>
+      <p style="font-size:10px;color:#6b7280;margin-top:10px">🎯 Objectif Q4 : 35 partenaires actifs = 50 véhicules</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">Croissance MAU B2C — Passagers Actifs</div>
+    <div class="bar-chart-wrap" style="height:60px">
+      <div class="bc-col"><div class="bc-val" style="font-size:11px">15</div><div class="bc-bar" style="width:100%;height:6px;background:#0E7C86"></div><div class="bc-lbl">Jun 2026</div></div>
+      <div class="bc-col"><div class="bc-val" style="font-size:11px">120</div><div class="bc-bar" style="width:100%;height:33px;background:#0E7C86"></div><div class="bc-lbl">Sep 2026</div></div>
+      <div class="bc-col"><div class="bc-val" style="font-size:11px">400</div><div class="bc-bar" style="width:100%;height:60px;background:#0E7C86"></div><div class="bc-lbl">Déc 2026</div></div>
+      <div class="bc-col" style="opacity:.4"><div class="bc-val" style="font-size:11px">—</div><div class="bc-bar" style="width:100%;height:4px;background:#888"></div><div class="bc-lbl">Réel</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ ROADMAP ══════ -->
+<div id="tab-roadmap" class="content">
+  <div class="phase-block">
+    <div class="phase-hdr" style="background:#E8680A" onclick="toggleSection('q2-ms')">
+      <div>Q2 — Fondation &nbsp;<span class="phase-period">Avril – Juin 2026</span></div>
+      <div style="font-size:11px;opacity:.9">2 partenaires · 28 sièges · Dashboard OPS live</div>
+    </div>
+    <div id="q2-ms">
+      <div class="milestone" onclick="toggleM(this)"><span class="m-chk">✓</span><span class="m-txt">Office Abidjan opérationnel — workspace, SIM, outils en place</span><span class="m-dl">15 Mai</span></div>
+      <div class="milestone" onclick="toggleM(this)"><span class="m-chk">✓</span><span class="m-txt">Dashboard OPS configuré et live (trips · OTP · occupancy)</span><span class="m-dl">15 Mai</span></div>
+      <div class="milestone" onclick="toggleM(this)"><span class="m-chk">✓</span><span class="m-txt">2 partenaires véhicules signés (28 sièges disponibles)</span><span class="m-dl">30 Jun</span></div>
+      <div class="milestone" onclick="toggleM(this)"><span class="m-chk">✓</span><span class="m-txt">OTP ≥ 80% dès le lancement des premières routes</span><span class="m-dl">30 Jun</span></div>
+      <div class="milestone" onclick="toggleM(this)"><span class="m-chk">✓</span><span class="m-txt">SLA CX : 100% des tickets passagers répondus en moins de 24h</span><span class="m-dl">30 Jun</span></div>
+      <div class="milestone" onclick="toggleM(this)"><span class="m-chk">✓</span><span class="m-txt">100 prospects opérateurs identifiés dans le CRM supply</span><span class="m-dl">30 Jun</span></div>
+      <div class="milestone" onclick="toggleM(this)"><span class="m-chk">✓</span><span class="m-txt">Protocole qualité conducteurs rédigé + formation onboarding lancée</span><span class="m-dl">30 Jun</span></div>
+    </div>
+  </div>
+
+  <div class="phase-block">
+    <div class="phase-hdr" style="background:#0E7C86" onclick="toggleSection('q3-ms')">
+      <div>Q3 — Scaling &nbsp;<span class="phase-period">Juillet – Septembre 2026</span></div>
+      <div style="font-size:11px;opacity:.9">13 véhicules · 335 sièges/j · OTP ≥ 85% · 3 contrats Exclusive</div>
+    </div>
+    <div id="q3-ms">
+      <div class="milestone" onclick="toggleM(this)"><span class="m-chk">✓</span><span class="m-txt">13 véhicules actifs sur la plateforme</span><span class="m-dl">30 Sep</span></div>
+      <div class="milestone" onclick="toggleM(this)"><span class="m-chk">✓</span><span class="m-txt">335 sièges disponibles par jour (capacité quotidienne)</span><span class="m-dl">30 Sep</span></div>
+      <div class="milestone" onclick="toggleM(this)"><span class="m-chk">✓</span><span class="m-txt">OTP ≥ 85% maintenu — Taux d'annulation < 5%</span><span class="m-dl">30 Sep</span></div>
+      <div class="milestone" onclick="toggleM(this)"><span class="m-chk">✓</span><span class="m-txt">3 contrats Exclusive signés — 240 sièges pré-vendus garantis</span><span class="m-dl">30 Sep</span></div>
+      <div class="milestone" onclick="toggleM(this)"><span class="m-chk">✓</span><span class="m-txt">Mid-year review présenté au Country Manager (31 Jul)</span><span class="m-dl">31 Jul</span></div>
+      <div class="milestone" onclick="toggleM(this)"><span class="m-chk">✓</span><span class="m-txt">Relation officielle avec le Ministère des Transports établie</span><span class="m-dl">30 Sep</span></div>
+      <div class="milestone" onclick="toggleM(this)"><span class="m-chk">✓</span><span class="m-txt">MAU B2C : 120 utilisateurs actifs mensuels</span><span class="m-dl">30 Sep</span></div>
+      <div class="milestone" onclick="toggleM(this)"><span class="m-chk">✓</span><span class="m-txt">Journée portes ouvertes opérateurs mensuelle mise en place</span><span class="m-dl">30 Sep</span></div>
+      <div class="milestone" onclick="toggleM(this)"><span class="m-chk">✓</span><span class="m-txt">Ambassadeurs terrain déployés dans Yopougon, Abobo, Cocody</span><span class="m-dl">30 Sep</span></div>
+    </div>
+  </div>
+
+  <div class="phase-block">
+    <div class="phase-hdr" style="background:#1A7F56" onclick="toggleSection('q4-ms')">
+      <div>Q4 — Breakeven &nbsp;<span class="phase-period">Octobre – Décembre 2026</span></div>
+      <div style="font-size:11px;opacity:.9">50 véhicules · 1 381 sièges/j · ≥ 75% occupation · Breakeven</div>
+    </div>
+    <div id="q4-ms">
+      <div class="milestone" onclick="toggleM(this)"><span class="m-chk">✓</span><span class="m-txt">50 véhicules sur plateforme — 35+ partenaires actifs</span><span class="m-dl">31 Déc</span></div>
+      <div class="milestone" onclick="toggleM(this)"><span class="m-chk">✓</span><span class="m-txt">1 381 sièges disponibles par jour (capacité décembre)</span><span class="m-dl">31 Déc</span></div>
+      <div class="milestone" onclick="toggleM(this)"><span class="m-chk">✓</span><span class="m-txt">10 contrats Exclusive — 800 sièges garantis quotidiennement</span><span class="m-dl">31 Déc</span></div>
+      <div class="milestone" onclick="toggleM(this)"><span class="m-chk">✓</span><span class="m-txt">≥ 75% taux d'occupation flotte globale</span><span class="m-dl">31 Déc</span></div>
+      <div class="milestone" onclick="toggleM(this)"><span class="m-chk">✓</span><span class="m-txt">≥ 85% occupation routes Exclusive (yield management actif)</span><span class="m-dl">31 Déc</span></div>
+      <div class="milestone" onclick="toggleM(this)"><span class="m-chk">✓</span><span class="m-txt">Pilote CNG/Electrique — 2 véhicules actifs, coûts carburant -30%</span><span class="m-dl">31 Déc</span></div>
+      <div class="milestone" onclick="toggleM(this)"><span class="m-chk">✓</span><span class="m-txt">MAU B2C : 400 utilisateurs actifs mensuels</span><span class="m-dl">31 Déc</span></div>
+      <div class="milestone" onclick="toggleM(this)"><span class="m-chk">✓</span><span class="m-txt">NPS passagers ≥ 95 — CX SLA 100% maintenu toute l'année</span><span class="m-dl">31 Déc</span></div>
+      <div class="milestone" onclick="toggleM(this)"><span class="m-chk">✓</span><span class="m-txt">Analyse stratégie Ops 2026 + Plan d'expansion 2027 rédigé</span><span class="m-dl">31 Déc</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ PLAN EXÉCUTION ══════ -->
+<div id="tab-plan" class="content">
+
+<div class="plan-section">
+  <div class="plan-hdr" onclick="toggleSection('q2w')">
+    <span class="badge" style="background:#E8680A">Q2</span>
+    <span class="plan-title-text">Fondation — Mai & Juin 2026</span>
+    <span class="plan-period">30 Avr → 30 Jun</span>
+  </div>
+  <div id="q2w">
+    <div class="week-block">
+      <div class="week-hdr"><span class="week-title">Semaine 1 — Setup & Orientation Marché</span><span class="week-dates">30 Avr – 6 Mai</span></div>
+      <div class="tasks">
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#E8680A"></div><span class="task-txt">Workspace opérationnel : SIM, WhatsApp Business, Google Sheets CRM Supply + Demand</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#E8680A"></div><span class="task-txt">Terrain 7h–9h : gares routières Adjamé, Yopougon, Port-Bouët — observer flux, noter opérateurs et plaques</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#0B2D5A"></div><span class="task-txt">LinkedIn : DRH / Admin des 20 tops entreprises Abidjan (Ecobank, Orange, Total, Nestlé, CFAO, Bolloré…)</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#0B2D5A"></div><span class="task-txt">Rédiger pitch WhatsApp partenaires (FR) + email froid B2B entreprises</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#888"></div><span class="task-txt">Lire tous les docs Shuttlers HQ : KPIs 2026, playbook Nigeria, product deck, contrats types</span></div>
+      </div>
+    </div>
+    <div class="week-block">
+      <div class="week-hdr"><span class="week-title">Semaine 2 — Premiers Contacts Supply + Demand</span><span class="week-dates">7–13 Mai</span></div>
+      <div class="tasks">
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#E8680A"></div><span class="task-txt">Appeler 10 opérateurs/jour — objectif : 3 RDV confirmés minimum cette semaine</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#E8680A"></div><span class="task-txt">⚠️ DEADLINE 15 MAI : Dashboard OPS configuré (KPIs trips · OTP · occupancy · alertes retard)</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#0B2D5A"></div><span class="task-txt">Envoyer emails froids à 20 DRH/Admin — tracker ouvertures et réponses</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#888"></div><span class="task-txt">Visite Zone Industrielle Yopougon — parler gardiens : horaires shifts, nb employés, comment ils arrivent</span></div>
+      </div>
+    </div>
+    <div class="week-block">
+      <div class="week-hdr"><span class="week-title">Semaine 3 — Démos Opérateurs + Discovery B2B</span><span class="week-dates">14–20 Mai</span></div>
+      <div class="tasks">
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#E8680A"></div><span class="task-txt">3+ démos/pitches opérateurs — montrer revenus garantis, paiement hebdo Mobile Money, zéro démarche commerciale</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#0B2D5A"></div><span class="task-txt">1ère réunion discovery B2B : écouter d'abord (combien d'employés ? où ils habitent ? transport actuel ?)</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#E8680A"></div><span class="task-txt">Journée portes ouvertes Shuttlers CIV #1 — inviter 8–10 opérateurs potentiels identifiés</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#888"></div><span class="task-txt">Rapport semaine → Country Manager : pipeline, blockers, intel marché</span></div>
+      </div>
+    </div>
+    <div class="week-block">
+      <div class="week-hdr"><span class="week-title">Semaines 4–5 — Closer les 2 Premiers Partenaires</span><span class="week-dates">21 Mai – 3 Jun</span></div>
+      <div class="tasks">
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#E8680A"></div><span class="task-txt">Signer 1er opérateur partenaire — collecte documents : papiers véhicule, assurance, permis chauffeurs</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#E8680A"></div><span class="task-txt">Signer 2ème opérateur — onboarding app chauffeur + formation conduite défensive</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#0B2D5A"></div><span class="task-txt">Proposer pilote gratuit 30 jours à 2 entreprises cibles (20–30 employés, 1 route, sans engagement)</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#888"></div><span class="task-txt">Rédiger SOP opérations : pré-trip check, briefing chauffeur, pickup passagers, escalade incidents</span></div>
+      </div>
+    </div>
+    <div class="week-block">
+      <div class="week-hdr"><span class="week-title">Semaines 6–9 — Premières Opérations & Clôture Q2</span><span class="week-dates">4–30 Jun</span></div>
+      <div class="tasks">
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#E8680A"></div><span class="task-txt">Jour J lancement : être présent 30 min avant au 1er point de ramassage — feedback temps réel</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#E8680A"></div><span class="task-txt">Monitoring OTP quotidien — objectif ≥ 80% dès la semaine 1 d'opérations</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#0B2D5A"></div><span class="task-txt">Protocole CX établi : 100% réponse passager en moins de 24h — suivi tableau de bord</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#888"></div><span class="task-txt">Préparer rapport Q2 complet + plan Q3 pour fin juin → présentation Country Manager</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="plan-section">
+  <div class="plan-hdr" onclick="toggleSection('q3w')">
+    <span class="badge" style="background:#0E7C86">Q3</span>
+    <span class="plan-title-text">Scaling — Juillet à Septembre 2026</span>
+    <span class="plan-period">Jul 1 → Sep 30</span>
+  </div>
+  <div id="q3w">
+    <div class="week-block">
+      <div class="week-hdr"><span class="week-title">Juillet S1–S2 — Accélération Supply</span><span class="week-dates">1–14 Jul</span></div>
+      <div class="tasks">
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#E8680A"></div><span class="task-txt">Objectif juillet : +4 opérateurs → atteindre 6 véhicules fin juillet (Syndicats + Facebook groupes transport)</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#E8680A"></div><span class="task-txt">Journée portes ouvertes #2 — broadcast WhatsApp, annonces Facebook groupes transport Abidjan</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#0B2D5A"></div><span class="task-txt">Push 3 contrats Exclusive : sièges pré-vendus aux 3 meilleures entreprises en pipeline</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#0E7C86"></div><span class="task-txt">Ambassadeurs terrain déployés : Yopougon, Abobo, Cocody — QR codes aux arrêts populaires</span></div>
+      </div>
+    </div>
+    <div class="week-block">
+      <div class="week-hdr"><span class="week-title">Juillet S3–S4 — Mid-Year Review</span><span class="week-dates">15–31 Jul</span></div>
+      <div class="tasks">
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#E8680A"></div><span class="task-txt">⚠️ DEADLINE 31 JUILLET : Mid-year review présenté au Country Manager</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#0E7C86"></div><span class="task-txt">Stands Plateau & Cocody pour acquisition B2C — programme parrainage lancé (crédits trajets)</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#888"></div><span class="task-txt">Prise de contact officielle Ministère des Transports — demander RDV institutionnel</span></div>
+      </div>
+    </div>
+    <div class="week-block">
+      <div class="week-hdr"><span class="week-title">Août–Septembre — Cibles Q3</span><span class="week-dates">1 Aoû – 30 Sep</span></div>
+      <div class="tasks">
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#E8680A"></div><span class="task-txt">Atteindre 13 véhicules / 335 sièges — vérifier coverage de toutes les routes dans le dashboard</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#E8680A"></div><span class="task-txt">OTP ≥ 85% maintenu — Taux annulation < 5% — revue hebdo avec data dashboard OPS</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#0B2D5A"></div><span class="task-txt">Signer 3 contrats Exclusive minimum — 240 sièges pré-vendus quotidiens garantis (revenus sécurisés)</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#0E7C86"></div><span class="task-txt">MAU B2C : pousser de 50 → 120 via programme parrainage intensif + push notifications quotidiennes</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#888"></div><span class="task-txt">Rapport Q3 + plan Q4 détaillé → présentation Country Manager + Head of Markets</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="plan-section">
+  <div class="plan-hdr" onclick="toggleSection('q4w')">
+    <span class="badge" style="background:#1A7F56">Q4</span>
+    <span class="plan-title-text">Breakeven — Octobre à Décembre 2026</span>
+    <span class="plan-period">Oct 1 → Déc 31</span>
+  </div>
+  <div id="q4w">
+    <div class="week-block">
+      <div class="week-hdr"><span class="week-title">Octobre — Sprint Supply & Demand</span><span class="week-dates">1–31 Oct</span></div>
+      <div class="tasks">
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#E8680A"></div><span class="task-txt">Sprint supply : +7 opérateurs/mois → atteindre 35+ partenaires actifs</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#0B2D5A"></div><span class="task-txt">Push 10 contrats Exclusive — réunions niveau CEO/COO/CFO pour deals > 100 employés</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#0E7C86"></div><span class="task-txt">Yield management actif : flex pricing selon demande + alertes temps réel sièges disponibles J-1</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#888"></div><span class="task-txt">Abonnements mensuels B2C : push intensif auprès de tous les passagers existants</span></div>
+      </div>
+    </div>
+    <div class="week-block">
+      <div class="week-hdr"><span class="week-title">Novembre — Optimisation Occupation</span><span class="week-dates">1–30 Nov</span></div>
+      <div class="tasks">
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#E8680A"></div><span class="task-txt">Cibler ≥ 75% occupation flotte globale — revue quotidienne des routes sous 60%</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#1A7F56"></div><span class="task-txt">Lancer pilote CNG/Electrique — 2 véhicules actifs, mesurer réduction coûts carburant (-30%)</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#0E7C86"></div><span class="task-txt">MAU B2C : pousser de 200 → 400 — campagne parrainage intensive + offres groupe famille/voisins</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#888"></div><span class="task-txt">Routes < 60% utilisation : investiguer et décider — optimiser ou réallouer le bus</span></div>
+      </div>
+    </div>
+    <div class="week-block">
+      <div class="week-hdr"><span class="week-title">Décembre — Sprint Final & Clôture 2026</span><span class="week-dates">1–31 Déc</span></div>
+      <div class="tasks">
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#E8680A"></div><span class="task-txt">50 véhicules confirmés — 1 381 sièges quotidiens vérifiés dans le dashboard OPS</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#0B2D5A"></div><span class="task-txt">Tous les contrats signés avant le 15 décembre — aucun deal non clôturé en fin d'année</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#1A7F56"></div><span class="task-txt">NPS passagers ≥ 95 — enquête satisfaction envoyée à tous les utilisateurs actifs</span></div>
+        <div class="task" onclick="tgl(this)"><div class="t-chk"></div><div class="dot" style="background:#888"></div><span class="task-txt">Rapport annuel 2026 + stratégie Ops 2027 + plan expansion → présentation CEO / Head of Markets</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#E8680A"></div>Critique / Supply</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#0B2D5A"></div>Demand / B2B</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#0E7C86"></div>B2C / Terrain</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#1A7F56"></div>Innovation</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#888"></div>Ops / Admin</div>
+</div>
+</div>
+
+<!-- ══════ CADENCE OPS ══════ -->
+<div id="tab-cadence" class="content">
+  <div class="cadence-wrap">
+    <div class="c-card">
+      <div class="c-title-row"><span class="c-title">Checklist Quotidienne</span><button class="reset-btn" onclick="resetGroup(this.closest('.c-card'))">Reset</button></div>
+      <div class="c-item" onclick="tglC(this)"><div class="c-chk">✓</div><span>Revue dashboard KPIs : trips · OTP · occupancy</span></div>
+      <div class="c-item" onclick="tglC(this)"><div class="c-chk">✓</div><span>Check-in chauffeurs confirmé dans l'app</span></div>
+      <div class="c-item" onclick="tglC(this)"><div class="c-chk">✓</div><span>Vérifier 0 annulation et 0 incident ouvert</span></div>
+      <div class="c-item" onclick="tglC(this)"><div class="c-chk">✓</div><span>Répondre à tous les tickets CX en attente</span></div>
+      <div class="c-item" onclick="tglC(this)"><div class="c-chk">✓</div><span>Rapport journalier envoyé → Country Manager</span></div>
+      <div class="c-item" onclick="tglC(this)"><div class="c-chk">✓</div><span>1 appel froid ou suivi opérateur (supply)</span></div>
+      <div class="c-item" onclick="tglC(this)"><div class="c-chk">✓</div><span>1 suivi prospect ou client entreprise (demand)</span></div>
+    </div>
+    <div class="c-card">
+      <div class="c-title-row"><span class="c-title">Revue Hebdomadaire</span><button class="reset-btn" onclick="resetGroup(this.closest('.c-card'))">Reset</button></div>
+      <div class="c-item" onclick="tglC(this)"><div class="c-chk">✓</div><span>Lundi : revue KPIs semaine précédente, set 3 priorités</span></div>
+      <div class="c-item" onclick="tglC(this)"><div class="c-chk">✓</div><span>Mar–Jeu : réunions supply + demand + terrain</span></div>
+      <div class="c-item" onclick="tglC(this)"><div class="c-chk">✓</div><span>Sync OPS hebdo avec Country Manager</span></div>
+      <div class="c-item" onclick="tglC(this)"><div class="c-chk">✓</div><span>Vendredi : suivi et relance tous dossiers ouverts</span></div>
+      <div class="c-item" onclick="tglC(this)"><div class="c-chk">✓</div><span>Vendredi : rapport hebdo envoyé → HQ</span></div>
+      <div class="c-item" onclick="tglC(this)"><div class="c-chk">✓</div><span>Samedi : mise à jour CRM supply + demand</span></div>
+      <div class="c-item" onclick="tglC(this)"><div class="c-chk">✓</div><span>Dimanche : revue plan et priorités semaine suivante</span></div>
+    </div>
+    <div class="c-card">
+      <div class="c-title-row"><span class="c-title">Agenda Mensuel</span><button class="reset-btn" onclick="resetGroup(this.closest('.c-card'))">Reset</button></div>
+      <div class="c-item" onclick="tglC(this)"><div class="c-chk">✓</div><span>Journée portes ouvertes opérateurs bus</span></div>
+      <div class="c-item" onclick="tglC(this)"><div class="c-chk">✓</div><span>P&L mensuel → rapport CEO / Head of Markets</span></div>
+      <div class="c-item" onclick="tglC(this)"><div class="c-chk">✓</div><span>Revue utilisation par route — décider optimiser ou sunset</span></div>
+      <div class="c-item" onclick="tglC(this)"><div class="c-chk">✓</div><span>Enquête satisfaction passagers (NPS cible ≥ 95)</span></div>
+      <div class="c-item" onclick="tglC(this)"><div class="c-chk">✓</div><span>Revue performance conducteurs (notation passagers)</span></div>
+      <div class="c-item" onclick="tglC(this)"><div class="c-chk">✓</div><span>Plan d'action mois suivant rédigé et partagé</span></div>
+      <div class="c-item" onclick="tglC(this)"><div class="c-chk">✓</div><span>Réseau Abidjan : événement business / secteur</span></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <div style="font-size:13px;font-weight:600;margin-bottom:14px">SLAs Opérationnels à Respecter</div>
+    <div class="sla-grid">
+      <div class="sla-card"><div class="sla-title" style="color:#E8680A">OTP — On-Time Performance</div><div class="sla-val">≥ 80% Q2 &nbsp;|&nbsp; ≥ 85% Q3/Q4</div><div class="sla-note">Alerte automatique si retard &gt; 10 minutes</div></div>
+      <div class="sla-card"><div class="sla-title" style="color:#0E7C86">CX — Expérience Passager</div><div class="sla-val">100% résolution &lt; 24h</div><div class="sla-note">Tous les tickets passagers — suivi quotidien</div></div>
+      <div class="sla-card"><div class="sla-title" style="color:#1A7F56">Occupation flotte</div><div class="sla-val">≥ 75% flotte &nbsp;|&nbsp; ≥ 85% Exclusive</div><div class="sla-note">Yield management actif Q4 — flex pricing</div></div>
+      <div class="sla-card"><div class="sla-title" style="color:#0B2D5A">Annulations</div><div class="sla-val">&lt; 5% des trips Q3–Q4</div><div class="sla-note">Suivi quotidien par route et par conducteur</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchTab(id,btn){
+  document.querySelectorAll('.content').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+function upd(bid,val,max,col){
+  const pct=Math.min(100,Math.round(parseFloat(val||0)/max*100));
+  const b=document.getElementById(bid);
+  b.style.width=pct+'%';b.style.background=col;
+}
+function updPct(bid,val,thresh,col){
+  const v=parseFloat(val||0);
+  const b=document.getElementById(bid);
+  b.style.width=Math.min(100,v)+'%';
+  b.style.background=v>=thresh?'#1A7F56':v>=thresh*.85?'#E8680A':'#C0392B';
+}
+function updCancel(bid,val){
+  const v=parseFloat(val||0);
+  const b=document.getElementById(bid);
+  b.style.width=Math.min(100,v/20*100)+'%';
+  b.style.background=v<=5?'#1A7F56':v<=10?'#E8680A':'#C0392B';
+}
+function toggleM(el){
+  const c=el.querySelector('.m-chk');
+  const on=c.classList.toggle('done');
+  el.classList.toggle('done',on);
+}
+function tgl(el){
+  const c=el.querySelector('.t-chk');
+  c.classList.toggle('done');
+  el.classList.toggle('done');
+}
+function tglC(el){
+  el.querySelector('.c-chk').classList.toggle('done');
+}
+function resetGroup(card){
+  card.querySelectorAll('.c-chk').forEach(c=>c.classList.remove('done'));
+}
+function toggleSection(id){
+  const el=document.getElementById(id);
+  if(el)el.style.display=el.style.display==='none'?'':'none';
+}
+</script>
+</body>
+</html>
